@@ -16,12 +16,49 @@ Start with [`docs/index.md`](docs/index.md).
 ## Consumption
 
 The docs are plain Markdown and intentionally do not require a language runtime.
-Projects can consume this repository by:
+Use Git subtree as the default import mechanism. It keeps the consuming
+repository normal: `docs/` is just files, fresh clones need no submodule setup,
+and updates are explicit.
 
-- adding it as a private Git dependency or submodule,
-- vendoring/copying `docs/` into a project-local docs directory,
-- using a repository-local sync script that copies `docs/` from a checked-out
-  copy of this repository.
+To replace an existing `docs/` directory in a consuming repository:
+
+```sh
+git pull --ff-only
+git rm -r docs
+git commit -m "Remove local engineering docs"
+
+git subtree add \
+  --prefix docs \
+  git@github.com:codaptai/engineering-docs.git \
+  main \
+  --squash
+
+git push
+```
+
+To update the imported docs later:
+
+```sh
+git subtree pull \
+  --prefix docs \
+  git@github.com:codaptai/engineering-docs.git \
+  main \
+  --squash
+
+git push
+```
+
+Other valid consumption patterns:
+
+- Package plus sync script: useful when most consuming repositories already
+  share a package manager. The sync script copies the package's `docs/` into the
+  repo-local `docs/`.
+- Vendored copy with an upstream note: simplest and most portable. Copy `docs/`
+  into the consuming repo and record this repository URL plus source commit in a
+  local note.
+- Git submodule: use only when the consuming repo should store a live pointer to
+  this repo. Submodules are precise but add clone/update ergonomics that most
+  docs consumers do not need.
 
 Consumer repositories should keep local product, module, and architecture docs
 separate from these shared standards.
