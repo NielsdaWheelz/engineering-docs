@@ -24,20 +24,21 @@ This directory is the canonical home for repository documentation.
 
 - [boundaries.md](boundaries.md): data representation at ingress, internal, and egress edges
 - [errors.md](errors.md): error and defect modeling, null classification
-- [keys-and-identities.md](keys-and-identities.md): identity naming, brands, and sealing
+- [keys-and-identities.md](keys-and-identities.md): identity naming, validated types, and sealing
 - [json-values.md](json-values.md): structured JSON values
 - [resource-lifecycle.md](resource-lifecycle.md): resource publication, reservations, setup state, and lifecycle row shapes
-- [tagged-unions.md](tagged-unions.md): `_tag` versus domain-record shapes
+- [tagged-unions.md](tagged-unions.md): tagged variants versus domain-record shapes
 - [generated-text.md](generated-text.md): escaping and quoting at generated-text boundaries
 
-### Effect
+### Runtime composition
 
-- [effect.md](effect.md): Effect usage, fibers, and scoped values
+- [effect.md](effect.md): effectful work, background tasks, and scoped values
 - [effect-services.md](effect-services.md): services versus helpers
-- [layers.md](layers.md): layer kinds and wiring rules
+- [layers.md](layers.md): runtime layer kinds and wiring rules
 
 ### Code style
 
+- [cleanliness.md](cleanliness.md): dead code, ownership, duplication, and complexity reduction
 - [simplicity.md](simplicity.md): fewer code paths, no speculative surface
 - [naming.md](naming.md): naming grammar for identifiers and observability
 - [function-parameters.md](function-parameters.md): parameter conventions
@@ -47,9 +48,10 @@ This directory is the canonical home for repository documentation.
 
 ### Platform
 
-- [codebase.md](codebase.md): tech stack, repo structure, imports, and module boundaries
-- [database.md](database.md): PostgreSQL schema, queries, and transactions
-- [frontend.md](frontend.md): SolidJS frontend rules
+- [codebase.md](codebase.md): technology ownership, repo structure, imports, and module boundaries
+- [database.md](database.md): relational schema, queries, and transactions
+- [frontend.md](frontend.md): browser-facing UI state, boundaries, and route-owned data
+- [testing.md](testing.md): behavior-focused testing standards and test tiers
 - [timing.md](timing.md): schedules and timing constants
 - [polling.md](polling.md): polling rules
 

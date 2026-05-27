@@ -9,7 +9,8 @@ This document covers error and defect modeling, `null` normalization, and runtim
 - Construct an error type only in the code that detects the condition it represents.
 - When branching on an error, consume the original error type completely and replace it with distinct branch-specific types.
 - Use errors for expected, modelable failures.
-- Use defects for broken invariants, impossible states, internal corruption, schema or code mismatch, and similar “should never happen” conditions.
+- Use defects for broken invariants, impossible states, internal corruption,
+  schema or code mismatch, and similar "should never happen" conditions.
 - Persistent failure of a dependency beyond its applicable retry budget is a defect by default.
 - Classify persistent dependency failure by the invariant or result the owning operation is expected to establish when our code and its dependencies are operating correctly.
 - Do not downgrade a persistent dependency outage to a normal product-facing error just because the current feature or request can continue without success.
@@ -31,24 +32,37 @@ This document covers error and defect modeling, `null` normalization, and runtim
 - Any intentional defect classification must include `justify-defect`.
 - Any branch that discards an error must first narrow it to a named or tagged error and include `justify-ignore-error`.
 
-## `null`
+## Absence And Null
 
-- Do not use `T | null` or `Option<T>` in service or domain APIs to represent absence that still requires classification.
+- Do not use nullable values or owned successful-absence wrappers in service or
+  domain APIs to represent absence that still requires classification.
 - Classify such absence immediately as a typed error or a defect.
-- Raw `null` is only for null-speaking boundaries: SQL nullable columns, third-party SDK/API payloads, browser/framework interop, local frontend component state, intentional public JSON protocols, and library/service contracts we do not control.
+- Raw `null` is only for null-speaking boundaries: nullable database columns,
+  third-party SDK/API payloads, browser/framework interop, local frontend
+  component state, intentional public JSON protocols, and library/service
+  contracts we do not control.
 - Normalize raw nullable input at the boundary. See [boundaries.md](boundaries.md) for the general ingress rule.
-- Use `Option<T>` when optionality is itself the successful result.
+- Use the owned absence representation when optionality is itself the
+  successful result.
 - Use a typed error when absence is an expected application-level failure.
 - Use a defect when absence violates an invariant.
-- Our own helpers, services, schemas, durable payloads, replayed results, and internal state should not accept or return raw `null` for semantic absence unless interop makes a better representation materially worse.
+- Our own helpers, services, boundary schemas, durable payloads, replayed
+  results, and internal state should not accept or return raw `null` for
+  semantic absence unless interop makes a better representation materially
+  worse.
 
 ## Service Invariants
 
-- Represent parameter validity in types, brands, and parsed canonical values.
-- If malformedness is knowable locally, validate once into an owned type, brand, or parsed canonical value and carry that type through the system.
+- Represent parameter validity in types, validated wrappers, and parsed canonical values.
+- If malformedness is knowable locally, validate once into an owned type,
+  validated wrapper, or parsed canonical value and carry that value through the
+  system.
 - Do not hide local representability checks inside render, quote, or encode helpers.
 - Renderers, quoters, and encoders should assume already-owned local types and only perform boundary-specific escaping or formatting.
-- Do not use runtime service-boundary guards for parameter validity that should be encoded in types or brands.
+- Do not use runtime service-boundary guards for parameter validity that should
+  be encoded in types, validated wrappers, or parsed canonical values.
 - Runtime checks in service code should enforce remaining invariants that cannot be expressed cleanly in the type system.
-- Such checks must include `justify-service-invariant-check` explaining why the invariant is not represented in types, brands, or parsed canonical values.
+- Such checks must include `justify-service-invariant-check` explaining why the
+  invariant is not represented in types, validated wrappers, or parsed
+  canonical values.
 - Violations of such invariants are defects.

@@ -29,6 +29,7 @@ Operation verb semantics such as `ensure...`, `require...`, and `validate...` be
 - Dynamic or unpredictable observability data belongs in attribute values or a
   deliberately structured payload under a stable key.
 - Prefer OpenTelemetry semantic-convention keys when one fits the concept.
-- Custom app-specific attribute keys should live under the `codapt.` prefix.
+- Custom application-specific attribute keys should live under one repository-owned
+  prefix.
 - Do not use camelCase attribute keys.
 - Do not reuse nominal-identifier PascalCase grammar for observability attribute keys.

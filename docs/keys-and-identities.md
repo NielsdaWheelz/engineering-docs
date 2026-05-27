@@ -2,7 +2,8 @@
 
 ## Scope
 
-This document covers identity and authority naming, branding, sealing, and related naming rules.
+This document covers identity and authority naming, validated identity types,
+sealing, and related naming rules.
 
 ## Id
 
@@ -13,12 +14,14 @@ This document covers identity and authority naming, branding, sealing, and relat
 ## Key
 
 - Meaningful identity should use `*Key` values.
-- Prefer structured `Schema.Json` keys for meaningful identity.
-- Do not pass raw anonymous `Schema.Json` for owned meaningful identity.
-- Give owned structured keys a named type and `*Schema`.
+- Prefer structured keys for meaningful identity.
+- Do not pass raw anonymous structured data for owned meaningful identity.
+- Give owned structured keys a named type and parser or schema.
 - Do not replace meaningful identity with meaningless UUIDs just because it identifies something.
-- Use `jsonKeyToString` only when a boundary genuinely requires a canonical string form of a structured key.
-- Do not use `jsonKeyToString` as a default persistence format.
+- Use a canonical string conversion only when a boundary genuinely requires a
+  string form of a structured key.
+- Do not use canonical string conversion as the default persistence format for
+  structured keys.
 
 ## Spec
 
@@ -31,17 +34,24 @@ This document covers identity and authority naming, branding, sealing, and relat
 
 - `*Handle` means outward opaque identity or an established domain capability handle.
 - Sealed handles are the default outward form of internal identity.
-- Use sealed handles for outward opaque identity across product, service, infrastructure, and broad web/RPC boundaries.
+- Use sealed handles for outward opaque identity across product, service,
+  infrastructure, and broad web/API boundaries.
 - Outward opaque identity should be named as a handle at boundary surfaces.
 - Handles identify server-owned entities; handles do not authorize actions.
 - Do not use short handles for authority-bearing values.
 - `ShortHandle` is the named exception to sealed `*Handle`: it is a compact alias to a typed server-side target.
 - Short handles are convenience aliases to server-owned entities, not authority.
-- Use short handles only for compact human/agent-friendly references that are expected to be seen, copied, typed, displayed, embedded in URLs, included in prompts, or passed through agent tool calls.
+- Use short handles only for compact human- or tool-friendly references that
+  are expected to be seen, copied, typed, displayed, embedded in URLs, included
+  in prompts, or passed through tool calls.
 - Resolve short handles server-side to the expected typed target, then enforce scope and ownership.
-- Do not call an outward handle `id` at broad or weakly scoped boundaries such as RPC payloads, DTOs, route params, logs, or reusable service APIs.
-- Strongly scoped command/function payloads may use `id` for an outward handle or short handle when the command name already gives the domain and `id` is the simplest call shape, such as `workspace.machine.command.run({ id })` or `workspace.workspace_file.read({ id })`.
-- Agent-facing workspace function payloads should prefer `id` for scoped short-handle inputs when the function name already gives the target domain, but the schema must still be an entity-specific short handle.
+- Do not call an outward handle `id` at broad or weakly scoped boundaries such as API payloads, transport payloads, route params, logs, or reusable service APIs.
+- Strongly scoped command/function payloads may use `id` for an outward handle or
+  short handle when the command name already gives the domain and `id` is the
+  simplest call shape.
+- Tool-facing command payloads should prefer `id` for scoped short-handle inputs
+  when the function name already gives the target domain, but the schema must
+  still be an entity-specific short handle.
 - When a scoped `id` carries an outward handle or short handle, docs and error messages should make that explicit enough that callers do not confuse it with private database identity.
 
 ## Token And ApiKey
@@ -63,7 +73,7 @@ This document covers identity and authority naming, branding, sealing, and relat
 
 - `*Ref` is only for lower-layer references such as provider-owned or infrastructure-owned pointers.
 - Do not use `*Ref` for outward opaque values.
-- Do not use `*Ref` for DTO wrappers.
+- Do not use `*Ref` for transport wrappers.
 
 ## Specific Names
 
@@ -73,14 +83,18 @@ This document covers identity and authority naming, branding, sealing, and relat
 - Use the same specific name across boundaries when the concept itself is the same.
 - A specific name should still respect the underlying semantics of the fallback category it replaces.
 
-## Brands
+## Validated Types And Brands
 
-- Use validated brands plus `*Schema` for canonical values whose malformedness is knowable locally.
-- Use nominal brands for provenance-backed internal IDs, outward handles, outward tokens, and lower-layer refs.
-- Outward sealed handles may extend a validated local wire-text type such as `SealedRefText`.
-- Outward credential values should extend a validated generated-token wire-text type.
+- Use validated types plus parsers or schemas for canonical values whose
+  malformedness is knowable locally.
+- Use nominal types or brands for provenance-backed internal IDs, outward
+  handles, outward tokens, and lower-layer refs.
+- Outward sealed handles should extend a validated local wire-text type.
+- Outward credential values should extend a validated generated-token wire-text
+  type.
 - Concrete short handles must use entity-specific brands and schemas at typed boundaries; generic `ShortHandle` is only for shared short-key infrastructure and truly entity-agnostic utilities.
-- Use owned named types and `*Schema` for semantic structured values rather than passing raw anonymous `Schema.Json`.
+- Use owned named types and parsers or schemas for semantic structured values
+  rather than passing raw anonymous structured data.
 - Add branding when the semantics need nominal distinction beyond the structure itself.
 - For canonical owned values, prefer a shared `parseX` and `assumeX` pair next to the owning type.
 - `parseX` may normalize once at ingress, then validate and return the canonical owned value. See [boundaries.md](boundaries.md) for the general ingress rule.
@@ -91,16 +105,19 @@ This document covers identity and authority naming, branding, sealing, and relat
 
 - Use sealed outward values by default for outward opaque identity.
 - User-controlled infrastructure is a product boundary.
-- Service-to-service product RPC boundaries should use sealed handles rather than exposing private IDs directly.
+- Service-to-service product API boundaries should use sealed handles rather than exposing private IDs directly.
 - Admin and debug surfaces may expose raw private IDs or tokens when inspection is the point.
-- Intentional short aliases to typed server-side targets, such as `ShortHandle`, are allowed only for visible human/agent ergonomics.
+- Intentional short aliases to typed server-side targets, such as `ShortHandle`, are allowed only for visible human or tool ergonomics.
 - Short handles must be resolved server-side to the expected target type, then authorized against the current scope.
 - Internally, always use private IDs and internal references.
 - Successful unseal or resolve is what converts an outward handle into the owning internal type.
-- Typed web and RPC schemas may validate outward sealed wire text as `SealedRefText` at the boundary, but entity-specific unseal or resolve still happens later.
+- Typed web and API schemas may validate outward sealed wire text at the
+  boundary, but entity-specific unseal or resolve still happens later.
 - Entity-specific `unsealX` and `resolveX` helpers own classification and conversion from outward wire text into private internal types.
 - Raw unsealed strings must not escape boundary helpers.
-- RPC and web transport schemas may carry typed outward handles, but they should not unseal directly into private IDs during decode.
+- API and web transport schemas may carry typed outward handles, but they
+  should not unseal directly into private IDs during decode.
 - Handler and service code owns unseal, classification, and conversion from malformed outward values into domain errors.
-- If an outward opaque value wraps UUID-backed identity, expose entity-specific helpers backed by `sealTrustedId` and `unsealIdAs`.
+- If an outward opaque value wraps generated private identity, expose
+  entity-specific seal and unseal helpers.
 - If an outward opaque value must wrap meaningful structured identity, seal a canonical JSON string or buffer rather than inventing an ad hoc string encoding.

@@ -1,5 +1,5 @@
 {
-  "name": "codapt-engineering-docs",
+  "name": "engineering-docs",
   "format": "markdown",
   "entrypoint": "docs/index.md",
   "docsRoot": "docs",

@@ -1,33 +1,45 @@
-# Effect
+# Effects
 
 ## Scope
 
-This document covers repository-wide Effect usage and Effect-native programming style.
+This document covers effectful work, asynchronous work, background task
+lifecycle, and scoped resource values.
 
 ## Rules
 
-- Use functions that return `Effect` when a function can fail in a handleable way or performs asynchronous work.
-- Prefer Effect-native APIs and patterns unless a boundary clearly requires another shape.
-- When in doubt, prefer the Effect-native shape.
+- Use explicit effect, task, result, or promise-returning functions when a
+  function can fail in a handleable way or performs asynchronous work.
+- Prefer the host runtime's native effect or async composition patterns unless
+  a boundary clearly requires another shape.
+- When in doubt, prefer the explicit effectful shape over hidden side effects.
 
-## Fibers
+## Background Work
 
-- Every forked fiber must have its termination propagated.
-- Avoid bare `forkScoped`, `forkDaemon`, and `forkChild`. Any use must include `justify-fork`.
-- Express concurrent background work as plain `Effect<never, E, R>` values rather than forking internally.
+- Every forked or background task must have its termination propagated,
+  observed, or deliberately supervised.
+- Avoid bare detached tasks. Any detached task must include a justification.
+- Represent concurrent background work as returned task or effect values rather
+  than forking internally.
 - Compose concurrent background work at the call site so concurrency and error propagation are handled together.
-- In streams, use `propagateInterrupt` to bind background work to the stream lifecycle.
-- In effects, use plain effect composition such as `Effect.raceFirst` or `Effect.all({ concurrency: "unbounded" })`.
-- Queue-based stream operators that need a forked producer should use `streamFromForkedProducer`.
-- Dynamic concurrent work that must outlive its trigger should use `FiberSet` or `FiberMap`.
-- Prefer `FiberMap` when keyed deduplication is required.
+- In streams, bind background producers to the stream lifecycle.
+- Use structured concurrency primitives for races, joins, and parallel
+  execution.
+- Queue-based stream operators that need a forked producer should use a local
+  helper that owns producer startup, shutdown, and error propagation.
+- Dynamic concurrent work that must outlive its trigger should use a supervised
+  task registry.
+- Prefer keyed task registries when keyed deduplication is required.
 - Every fork site must document its termination-propagation mechanism.
 
 ## Scope-Bound Values
 
-- Do not let values produced by scoped effects escape their scope.
+- Do not let values produced by scoped acquisition escape their scope.
 - Keep scoped value creation and use within the same scope.
-- Do not return scoped values, store them in `Ref` or closures, or pass them to long-lived fibers.
-- `Effect.provide(layer)` creates a scope around the wrapped effect.
-- If `Effect.provide(layer)` wraps acquisition but not use, the value may outlive its resources.
-- When a value depends on scoped resources, `Effect.provide(layer)` must wrap both acquisition and use.
+- Do not return scoped values, store them in mutable references or closures, or
+  pass them to long-lived background tasks.
+- Resource-provider and dependency-wiring scopes must cover both acquisition
+  and use.
+- If a provider scope wraps acquisition but not use, the value may outlive its
+  resources.
+- When a value depends on scoped resources, the scope must wrap both acquisition
+  and use.

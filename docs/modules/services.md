@@ -2,32 +2,39 @@
 
 ## Scope
 
-This document covers the backend services produced by the repo and the shared infrastructure they compose.
+This document covers backend service ownership and the shared infrastructure
+that services compose.
 
-## Main Service
+## Product Service
 
-- The main service lives in `src/main/`.
-- It owns user-facing functionality: executor, credits, and the main app and admin web UIs.
-- Entrypoints live in `src/main/server/bin/`.
-- API env vars are `MAIN_API_BIND_PORT`, `MAIN_API_BIND_HOST`, and `MAIN_API_ORIGIN`.
-- Main web origin env vars are `MAIN_APP_WEB_ORIGIN` and `MAIN_ADMIN_WEB_ORIGIN`.
-- Main web dev env vars are `MAIN_APP_WEB_BIND_PORT`, `MAIN_APP_WEB_BIND_HOST`, `MAIN_ADMIN_WEB_BIND_PORT`, and `MAIN_ADMIN_WEB_BIND_HOST`.
+- Product services own user-facing functionality and product-facing admin
+  surfaces.
+- Service entrypoints live in explicit entrypoint directories.
+- API bind and origin environment variables belong to the service that serves
+  the API.
+- Web origin and development bind environment variables belong to the service
+  that serves or owns the web surface.
 
-## Cloud Service
+## Infrastructure Service
 
-- The cloud service lives in `src/cloud/`.
-- It owns cloud infrastructure management: tenants, VM provisioning, HTTP endpoint/domain management, private TCP tunnels, relays, and the cloud admin and tenant web UIs.
-- See [tunnel.md](tunnel.md) for the cloud tunnel subsystem, including the shared authorize route, HTTP endpoint, private TCP tunnel, relay features, and the tunnel-server and relay-node setup entrypoints.
-- Entrypoints live in `src/cloud/server/bin/`.
-- API env vars are `CLOUD_API_BIND_PORT`, `CLOUD_API_BIND_HOST`, and `CLOUD_API_ORIGIN`.
-- Tunnel server setup env vars are documented in [tunnel.md](tunnel.md).
-- Cloud web origin env vars are `CLOUD_ADMIN_WEB_ORIGIN` and `CLOUD_TENANT_WEB_ORIGIN`.
-- Cloud web dev env vars are `CLOUD_ADMIN_WEB_BIND_PORT`, `CLOUD_ADMIN_WEB_BIND_HOST`, `CLOUD_TENANT_WEB_BIND_PORT`, `CLOUD_TENANT_WEB_BIND_HOST`.
+- Infrastructure services own infrastructure management such as tenants,
+  provisioning, endpoint/domain management, tunnels, relays, and
+  infrastructure-facing admin surfaces.
+- Feature subsystem setup environment variables belong in the subsystem doc that
+  owns the setup flow.
+- Infrastructure service entrypoints follow the same entrypoint, API
+  environment, and web-origin ownership rules as product services.
 
 ## Shared Infrastructure
 
-- Shared reusable modules live under `src/shared/`.
-- `src/shared/framework/` is the lowest-level reusable substrate: coordination, DB families, retry, RPC, serialization, setup, process helpers, and web substrate.
-- `src/shared/server/db/` is the shared primary DB owner for persistent reusable-module tables such as auth, primary coordination, short key, and short handle tables.
-- Shared semantic modules such as `src/shared/auth/`, `src/shared/executor/`, `src/shared/executor-process-specs/`, and `src/shared/short-key/` remain outside `framework/` and are composed where a service needs them.
-- `CoordinationTransientDb` stays with coordination under `src/shared/framework/coordination/transient/db/` because it is a backend detail for the transient coordination runtime, not a shared primary schema owner.
+- Shared reusable modules live in the repository's shared module area.
+- The lowest-level reusable substrate owns framework concerns such as
+  coordination, database families, retry, transport, serialization, setup,
+  process helpers, and web substrate.
+- Shared persistent tables have one shared storage owner. Semantic behavior
+  still lives in the module that owns the concept.
+- Shared semantic modules remain outside the lowest-level framework substrate
+  and are composed where a service needs them.
+- Transient coordination storage stays with coordination because it is a backend
+  detail for the transient coordination runtime, not a shared primary schema
+  owner.

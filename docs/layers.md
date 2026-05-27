@@ -13,17 +13,23 @@ This document covers layer kinds and the rules specific to each kind.
 
 ## Service Layers
 
-- `Context.Service` classes should expose their layer as `static readonly layer`.
-- Service layers should be self-wired and expose `never` in their error channel.
-- Use `selfLayer(...)` when the constructor already has no service-private dependencies.
-- Use `selfLayerWith(...)` when the service layer closes its service-private dependencies with other self-wired layers.
-- Service constructors must decide fatal setup errors locally and reclassify them as defects or explicit operator-facing CLI errors before surfacing.
+- Service types should expose one canonical runtime wiring value or factory.
+- Service layers should be self-wired and should not leak unclassified setup
+  errors.
+- Use a direct self-wired layer when the constructor already has no
+  service-private dependencies.
+- Use a self-wired layer with private dependency closure when the service layer
+  closes its service-private dependencies with other self-wired layers.
+- Service constructors must decide fatal setup errors locally and reclassify
+  them as defects or explicit operator-facing startup errors before surfacing.
 - Service dependencies must be explicit.
 - Service-private dependencies belong at the dependent service layer, not at call sites.
 - Prefer service layers that are as dependency-free as possible from the outside.
 - Do not rely on ambient context for service internals.
-- Do not export reusable APIs that return live service values pre-wired with ad hoc `Layer.provide(...)`.
-- Use `withSelfService(...)` or a domain-specific adapter helper at process or adapter edges and in explicit handle factories.
+- Do not export reusable APIs that return live service values pre-wired with ad
+  hoc dependency-provider wiring.
+- Use a domain-specific adapter helper at process or adapter edges and in
+  explicit handle factories.
 
 ## Contribution Layers
 
@@ -32,7 +38,8 @@ This document covers layer kinds and the rules specific to each kind.
 
 ## Aggregation Layers
 
-- Cross-module concerns should compose through `Layer.mergeAll`.
+- Cross-module concerns should compose through the repository's canonical
+  aggregation primitive.
 - A module that contributes to a cross-module concern should expose a module-level aggregation layer for that concern.
 - If `ModuleA` depends on `ModuleB`, `ModuleB`'s contribution must remain in the aggregation chain.
 - Modules should import concern aggregation only from direct dependents.
@@ -49,4 +56,5 @@ This document covers layer kinds and the rules specific to each kind.
 
 ## Naming
 
-- Non-service layer values should use the `*Layer` suffix.
+- Non-service layer values should use a consistent layer suffix such as
+  `*Layer`.

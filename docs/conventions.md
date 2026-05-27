@@ -19,5 +19,6 @@ This document covers small implementation conventions that do not belong to a la
 ## Opaque Encodings
 
 - Use base58 for small opaque tokens, handles, or identifier suffixes where punctuation hurts copy/paste or debugging.
-- Use base64 for binary payloads in JSON/RPC bodies, structured byte transport, and shell interop.
+- Use base64 for binary payloads in JSON transport bodies, structured byte
+  transport, and shell interop.
 - Use base64url only when the byte string itself must be URL/path/form safe; document the exception with `justify-base64url-over-base64`.

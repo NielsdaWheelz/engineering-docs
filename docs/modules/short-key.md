@@ -2,25 +2,33 @@
 
 ## Scope
 
-This document covers the shared short key and short handle infrastructure under `src/shared/short-key/`.
+This document covers shared short key and short handle infrastructure.
 
 ## Purpose
 
 - `ShortKey` is a globally unique short token for framework and product modules that need a compact allocation before they have another stable identifier.
 - `ShortHandle` is an outward short alias that resolves server-side to a typed target.
-- Use short handles only for compact human/agent-friendly references that are expected to be seen, copied, typed, displayed, embedded in URLs, included in prompts, or passed through agent tool calls.
+- Use short handles only for compact human- or tool-friendly references that
+  are expected to be seen, copied, typed, displayed, embedded in URLs, included
+  in prompts, or passed through tool calls.
 - A short handle is a convenience alias, not authority.
-- Agent-facing workspace functions may expose scoped short-handle inputs as `id` when the function name already names the target domain, but each such `id` must use the target's entity-specific short-handle schema.
+- Tool-facing functions may expose scoped short-handle inputs as `id` when the
+  function name already names the target domain, but each such `id` must use the
+  target's entity-specific short-handle schema.
 - Resolve short handles server-side to the expected typed target, then enforce scope and ownership.
 - Every short handle points at exactly one short key.
 - A short key may exist without a short handle when the caller only needs a unique short token.
 
 ## Placement
 
-- Short key and short handle code lives under `src/shared/short-key/`.
-- Browser-safe value types and parsing live at the module root; DB-backed allocation and resolution services live under `src/shared/short-key/server/`.
-- Persistent short key and short handle tables live in `SharedDb` under `src/shared/server/db/`.
-- Main and cloud code use the shared services; they do not own service-local short key or short handle tables.
+- Short key and short handle code lives in one shared module.
+- Client-safe value types and parsing live at the module root; database-backed
+  allocation and resolution services live in the server/runtime portion of the
+  module.
+- Persistent short key and short handle tables live with the shared storage
+  owner.
+- Product and infrastructure services use the shared services; they do not own
+  service-local short key or short handle tables.
 - `ShortHandles` depends on `ShortKeys`; `ShortKeys` does not depend on handles.
 
 ## Typed Boundaries
